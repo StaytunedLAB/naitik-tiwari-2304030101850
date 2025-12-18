@@ -1,6 +1,4 @@
-// Banking System – Transaction & Balance Validator
-// All logic is inside try, all errors handled in catch, audit log in finally
-
+// Input data (do not modify)
 const inputData = {
     accountNumber: "ACC12345",
     accountHolder: "John Doe",
@@ -9,14 +7,15 @@ const inputData = {
     transactions: [
         { type: "Deposit", amount: "500" },
         { type: "Withdraw", amount: 300 },
-        { type: "Withdraw", amount: "1500" },   // insufficient balance
-        { type: "Deposit", amount: "-50" },     // invalid amount
-        { type: "Transfer", amount: 100 },      // invalid type
-        { amount: 200 },                         // missing type
-        { type: "Withdraw", amount: "abc" }     // invalid number
+        { type: "Withdraw", amount: "1500" }, // insufficient balance
+        { type: "Deposit", amount: "-50" },   // invalid amount
+        { type: "Transfer", amount: 100 },    // invalid type
+        { amount: 200 },                      // missing type
+        { type: "Withdraw", amount: "abc" }   // invalid number
     ]
 };
 
+// Output structure
 let output = {
     accountNumber: null,
     accountHolder: null,
@@ -29,12 +28,12 @@ let output = {
 };
 
 try {
-    // Copy basic account info (do not modify original input)
+    // Copy account details
     output.accountNumber = inputData.accountNumber || "UNKNOWN";
     output.accountHolder = inputData.accountHolder || "UNKNOWN";
     output.currency = inputData.currency || "UNKNOWN";
 
-    // Safely convert initial balance
+    // Convert initial balance safely
     let balance = Number(inputData.initialBalance);
     if (isNaN(balance)) {
         throw new Error("Invalid initial balance");
@@ -48,6 +47,7 @@ try {
 
     for (let i = 0; i < transactions.length; i++) {
         const tx = transactions[i];
+
         try {
             if (!tx || !tx.type) {
                 throw new Error("Missing transaction type");
@@ -57,28 +57,24 @@ try {
             if (isNaN(amount)) {
                 throw new Error("Invalid amount");
             }
+
             if (amount <= 0) {
                 throw new Error("Amount must be greater than zero");
             }
 
             if (tx.type === "Deposit") {
                 balance += amount;
-                output.appliedTransactions.push({
-                    type: tx.type,
-                    amount: amount
-                });
+                output.appliedTransactions.push({ type: tx.type, amount });
             } else if (tx.type === "Withdraw") {
                 if (amount > balance) {
                     throw new Error("Insufficient balance");
                 }
                 balance -= amount;
-                output.appliedTransactions.push({
-                    type: tx.type,
-                    amount: amount
-                });
+                output.appliedTransactions.push({ type: tx.type, amount });
             } else {
                 throw new Error("Unknown transaction type");
             }
+
         } catch (txError) {
             output.rejectedTransactions.push({
                 transaction: tx,
@@ -90,14 +86,14 @@ try {
     output.finalBalance = balance;
 
 } catch (error) {
-    // System-level error handling
+    // System-level error
     output.rejectedTransactions.push({
         transaction: null,
         reason: "System Error"
     });
 } finally {
-    // Audit log & completion message
     output.auditLog = "Transaction processing completed successfully.";
+
     console.log("=== ACCOUNT SUMMARY ===");
     console.log(JSON.stringify(output, null, 2));
     console.log("Processing finished.");
